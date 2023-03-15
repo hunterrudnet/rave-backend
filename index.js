@@ -32,7 +32,18 @@ const getToken = async (
 };
 
 const access_token = await getToken();
-
 const spotify = new SpotifyWebApi({ accessToken: access_token });
+
+// Example getting artists from a specific album
 const { artists } = await spotify.albums.getAlbum("1uzfGk9vxMXfaZ2avqwxod");
 console.log(artists.map((artist) => artist.name));
+
+// Example searching for an album by ID
+const album = await spotify.albums.getAlbum('53VKICyqCf91sVkTdFrzKX');
+console.log(album.name);
+
+// Example searching for an album by name, and returning a list of albums
+const items = await spotify.search.searchAlbums('Gods Plan');
+for (const item of items.items) {
+  console.log(item.name);
+}
