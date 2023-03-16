@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import User from "./db/models/user.js";
+import UserFollow from "./db/models/userFollow.js";
 import Album from "./db/models/album.js";
 import Track from "./db/models/track.js";
 import Review from "./db/models/review.js";
@@ -10,6 +11,7 @@ import userRouter from "./db/controllers/user-controller.js";
 import albumRouter from "./db/controllers/album-controller.js";
 import trackRouter from "./db/controllers/track-controller.js";
 import reviewRouter from "./db/controllers/review-controller.js";
+import userFollowRouter from "./db/controllers/userFollow-controller.js";
 
 const app = express();
 const PORT = 8080;
@@ -34,6 +36,7 @@ app.use('/users', userRouter);
 app.use('/albums', albumRouter);
 app.use('/tracks', trackRouter);
 app.use('/reviews', reviewRouter);
+app.use('/userFollows', userFollowRouter);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });

@@ -2,6 +2,7 @@ import express from "express";
 import User from "../models/user.js";
 import Like from "../models/like.js";
 import Album from "../models/album.js";
+import UserFollow from "../models/userFollow.js";
 
 const userRouter = express.Router();
 
