@@ -43,6 +43,7 @@ albumRouter.get("/:albumId", async (req, res) => {
         return;
     }
     getAlbum(spotify, req.params.albumId).then((data) => {
+        // TODO: Create track objects in our database for each track in the album
         res.send(data);
     });
 });
