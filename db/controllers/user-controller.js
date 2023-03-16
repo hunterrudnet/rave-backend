@@ -8,16 +8,18 @@ const userRouter = express.Router();
 // Create a new User with email given in request body
 userRouter.post("/", (req, res) => {
     // Validate request
-    if (!req.body.email) {
+    if (!req.body.email && !req.body.username) {
         res.status(400).send({
-            message: "Email can not be empty!"
+            message: "Fields can not be empty!"
         });
         return;
     }
 
     // Create a new user
     const user = {
-        email: req.body.email
+        email: req.body.email,
+        username: req.body.username,
+        bio: req.body.bio
     };
 
     // Save User in the database
@@ -33,19 +35,19 @@ userRouter.post("/", (req, res) => {
         });
 });
 
-// Retrieve a user based on email provided in request body
+// Retrieve a user based on username provided in request body
 userRouter.get("/lookup", (req, res) => {
     // Validate request
-    if (!req.body.email) {
+    if (!req.body.username) {
         res.status(400).send({
-            message: "Email can not be empty!"
+            message: "Username can not be empty!"
         });
         return;
     }
 
 
     // Retrieve any user with email matching the one provided in the request body
-    User.findAll({where: { email: req.body.email }})
+    User.findAll({where: { username: req.body.username }})
         .then(data => {
             res.send(data);
         })
@@ -56,6 +58,8 @@ userRouter.get("/lookup", (req, res) => {
             });
         });
 });
+
+// locallost:3000/profile/username
 
 
 
