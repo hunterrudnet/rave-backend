@@ -1,5 +1,4 @@
 import express from "express";
-import sequelize from "../models/index.js";
 import User from "../models/user.js";
 import Like from "../models/like.js";
 import Album from "../models/album.js";
