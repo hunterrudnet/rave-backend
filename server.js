@@ -2,10 +2,12 @@ import express from "express";
 import cors from "cors";
 import User from "./db/models/user.js";
 import Album from "./db/models/album.js";
+import Track from "./db/models/track.js";
 import spotify from "./spotify/index.js";
 import sequelize from "./db/models/index.js";
 import userRouter from "./db/controllers/user-controller.js";
 import albumRouter from "./db/controllers/album-controller.js";
+import trackRouter from "./db/controllers/track-controller.js";
 
 const app = express();
 const PORT = 8080;
@@ -28,6 +30,7 @@ try {
 // Base route for user actions.
 app.use('/users', userRouter);
 app.use('/albums', albumRouter);
+app.use('/tracks', trackRouter);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
