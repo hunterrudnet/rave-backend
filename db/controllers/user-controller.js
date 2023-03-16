@@ -1,5 +1,9 @@
 import express from "express";
 import User from "../models/user.js";
+import Like from "../models/like.js";
+import Album from "../models/album.js";
+import UserFollow from "../models/userFollow.js";
+import Moderator from "../models/moderator.js";
 
 const userRouter = express.Router();
 
@@ -36,18 +40,16 @@ userRouter.post("/", (req, res) => {
 });
 
 // Retrieve a user based on username provided in request body
-userRouter.get("/lookup", (req, res) => {
+userRouter.get("/lookup/:username", (req, res) => {
     // Validate request
-    if (!req.body.username) {
+    if (!req.params.username) {
         res.status(400).send({
             message: "Username can not be empty!"
         });
         return;
     }
 
-
-    // Retrieve any user with email matching the one provided in the request body
-    User.findAll({where: { username: req.body.username }})
+    User.findOne({where: { username: req.params.username }, include: [ Album ]})
         .then(data => {
             res.send(data);
         })
@@ -59,9 +61,61 @@ userRouter.get("/lookup", (req, res) => {
         });
 });
 
-// locallost:3000/profile/username
+// TESTING ROUTE FOR LIKES - remove later
+userRouter.post("/likes", (req, res) => {
+    // Validate request
+    if (!req.body.userId && !req.body.albumId) {
+        res.status(400).send({
+            message: "Fields can not be empty!"
+        });
+        return;
+    }
+    // Create a new like
+    const like = {
+        UserId: req.body.userId,
+        AlbumId: req.body.albumId,
+    };
 
+    // Save User in the database
+    Like.create(like)
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while creating the Like."
+            });
+        });
+});
 
+// Turn a user into a moderator
+userRouter.post("/moderator/", (req, res) => {
+    // Validate request
+    if (!req.body.userId && !req.body.role) {
+        res.status(400).send({
+            message: "Fields can not be empty!"
+        });
+        return;
+    }
 
+    // Create a new moderator
+    const moderator = {
+        UserId: req.body.userId,
+        role: req.body.role,
+    };
+
+    // Save User in the database
+    Moderator.create(moderator)
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while creating the Moderator."
+            });
+        });
+});
 
 export default userRouter;
