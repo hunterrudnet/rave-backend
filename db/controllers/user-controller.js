@@ -23,7 +23,8 @@ userRouter.post("/", (req, res) => {
     const user = {
         email: req.body.email,
         username: req.body.username,
-        bio: req.body.bio
+        bio: req.body.bio,
+        image: req.body.image
     };
 
     // Save User in the database
