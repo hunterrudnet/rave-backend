@@ -1,7 +1,13 @@
 # rave-backend
 Backend for Rave
 
+
 ## Setup/Requirements 
+
+Make sure you have a .env with the following values:
+
+SPOTIFY_CLIENT_ID=""
+SPOTIFY_CLIENT_SECRET=""
 
 Run `npm install` or `yarn install` 
 

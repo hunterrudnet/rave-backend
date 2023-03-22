@@ -1,10 +1,13 @@
 import { SpotifyWebApi } from "spotify-web-api-ts";
+import dotenv from "dotenv";
 import axios from "axios";
 import qs from "qs";
 
+dotenv.config();
+
 const getToken = async (
-  client_id = "c3e248a6801a43adbbe6960ed4af9903",
-  client_secret = "2e299f92f1204086bc9ae545b95a20b5"
+  client_id = process.env.SPOTIFY_CLIENT_ID,
+  client_secret = process.env.SPOTIFY_CLIENT_SECRET
 ) => {
   const headers = {
     headers: {
