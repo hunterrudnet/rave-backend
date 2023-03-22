@@ -12,6 +12,9 @@ import albumRouter from "./db/controllers/album-controller.js";
 import trackRouter from "./db/controllers/track-controller.js";
 import reviewRouter from "./db/controllers/review-controller.js";
 import userFollowRouter from "./db/controllers/userFollow-controller.js";
+import dotenv from "dotenv";
+
+dotenv.config();
 
 const app = express();
 const PORT = 8080;
