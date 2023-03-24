@@ -46,7 +46,7 @@ userFollowRouter.get("/following/:userId", (req, res) => {
     }
 
     // Get all users that a user is following
-    UserFollow.findAll({where: { follower_id: req.params.userId }, include: [ User ]})
+    User.findAll({where: { id: req.params.userId }, include: [{ model: User, as: "Followings" } ]})
         .then(data => {
             res.send(data);
         })
@@ -59,16 +59,27 @@ userFollowRouter.get("/following/:userId", (req, res) => {
 });
 
 // // Get all followers for a specific user
-// userFollowRouter.get("/following/:userId", (req, res) => {
-//     // Validate request
-//     if (!req.params.userId) {
-//         res.status(400).send({
-//             message: "UserID can not be empty!"
-//         });
-//         return;
-//     }
-    
-// });
+userFollowRouter.get("/follower/:userId", (req, res) => {
+    // Validate request
+    if (!req.params.userId) {
+        res.status(400).send({
+            message: "UserID can not be empty!"
+        });
+        return;
+    }
+
+    // Get all users that a user is following
+    User.findAll({where: { id: req.params.userId }, include: [{ model: User, as: "Followers" } ]})
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "An Error occurred retrieving the UserFollows."
+            });
+        });
+});
 
 
 export default userFollowRouter;
