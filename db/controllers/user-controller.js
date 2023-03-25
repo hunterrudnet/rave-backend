@@ -115,7 +115,7 @@ userRouter.post("/likes", (req, res) => {
     };
 
     // Save User in the database
-    Like.findAll(like)
+    Like.create(like)
         .then(data => {
             res.send(data);
         })
