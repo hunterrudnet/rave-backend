@@ -48,7 +48,7 @@ userFollowRouter.get("/following/:userId", (req, res) => {
     // Get all users that a user is following
     User.findAll({where: { id: req.params.userId }, include: [{ model: User, as: "Followings" } ]})
         .then(data => {
-            res.send(data);
+            res.send(data[0]["Followings"]);
         })
         .catch(err => {
             res.status(500).send({
@@ -71,7 +71,7 @@ userFollowRouter.get("/follower/:userId", (req, res) => {
     // Get all users that a user is following
     User.findAll({where: { id: req.params.userId }, include: [{ model: User, as: "Followers" } ]})
         .then(data => {
-            res.send(data);
+            res.send(data[0]["Followers"]);
         })
         .catch(err => {
             res.status(500).send({

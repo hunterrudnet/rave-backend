@@ -43,8 +43,15 @@ trackRouter.get("/:trackId", async (req, res) => {
         });
         return;
     }
-    getTrack(spotify, req.params.trackId).then((data) => {
-        res.send(data);
+
+    Track.findAll({where: {spotifyId: req.params.trackId}}).then(data => {
+            res.send(data)
+        }
+    ).catch(err => {
+        res.status(500).send({
+            message:
+                err.message || "Some error occurred while retrieving the Track."
+        });
     });
 });
 

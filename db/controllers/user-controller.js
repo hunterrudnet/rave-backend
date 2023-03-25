@@ -28,9 +28,13 @@ userRouter.post("/", (req, res) => {
     };
 
     // Save User in the database
-    User.create(user)
+    User.findOrCreate({where: {email: req.body.email}, defaults: {
+            username: req.body.username,
+            bio: req.body.bio,
+            image: req.body.image
+        }})
         .then(data => {
-            res.send(data);
+            res.send(data[0]);
         })
         .catch(err => {
             res.status(500).send({
@@ -39,6 +43,39 @@ userRouter.post("/", (req, res) => {
             });
         });
 });
+
+userRouter.put("/", (req, res) => {
+    // Validate request
+    if (!req.body.email) {
+        res.status(400).send({
+            message: "Fields can not be empty!"
+        });
+        return;
+    }
+
+    // Create a new user
+    const user = {
+        username: req.body.username,
+        bio: req.body.bio,
+        image: req.body.image
+    };
+
+    // Save User in the database
+    User.update(user, {where: {email: req.body.email}})
+        .then(data => {
+            res.status(200).send({
+                message:
+                     "User Successfully Updated."
+            });
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while creating the User."
+            });
+        });
+});
+
 
 // Retrieve a user based on username provided in request body
 userRouter.get("/lookup/:username", (req, res) => {
@@ -50,7 +87,7 @@ userRouter.get("/lookup/:username", (req, res) => {
         return;
     }
 
-    User.findOne({where: { username: req.params.username }, include: [ Album ]})
+    User.findAll({where: { username: req.params.username }, include: [ Album ]})
         .then(data => {
             res.send(data);
         })

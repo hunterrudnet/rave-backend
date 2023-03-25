@@ -4,6 +4,11 @@ import Album from "./album.js";
 import { DataTypes } from "sequelize";
 
 const Review = sequelize.define("Review", {
+    id: {
+        type: DataTypes.INTEGER,
+        primaryKey: true,
+        autoIncrement: true
+    },
     score:  {
         type: DataTypes.INTEGER,
         allowNull: false,

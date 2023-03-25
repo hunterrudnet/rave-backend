@@ -39,7 +39,7 @@ app.use('/users', userRouter);
 app.use('/albums', albumRouter);
 app.use('/tracks', trackRouter);
 app.use('/reviews', reviewRouter);
-app.use('/userFollows', userFollowRouter);
+app.use('/user-follows', userFollowRouter);
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}.`);
 });
