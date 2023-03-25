@@ -50,7 +50,7 @@ userRouter.get("/lookup/:username", (req, res) => {
         return;
     }
 
-    User.findOne({where: { username: req.params.username }, include: [ Album ]})
+    User.findAll({where: { username: req.params.username }, include: [ Album ]})
         .then(data => {
             res.send(data);
         })
@@ -78,7 +78,7 @@ userRouter.post("/likes", (req, res) => {
     };
 
     // Save User in the database
-    Like.create(like)
+    Like.findAll(like)
         .then(data => {
             res.send(data);
         })

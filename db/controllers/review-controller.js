@@ -36,6 +36,39 @@ reviewRouter.post("/", (req, res) => {
         });
 });
 
+reviewRouter.get("/", (req, res) => {
+
+
+
+    // Save Review in the database
+    Review.findAll()
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while creating the Review."
+            });
+        });
+});
+
+// Route to delete a review based on a given id
+reviewRouter.delete("/:review_id", (req, res) => {
+
+    // Save Review in the database
+    Review.destroy({where: {id: req.params.review_id}})
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while creating the Review."
+            });
+        });
+})
+
 // Get all reviews for a given album
 reviewRouter.get("/:albumId", (req, res) => {
     // Validate request
