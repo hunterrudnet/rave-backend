@@ -34,10 +34,10 @@ albumRouter.post("/", (req, res) => {
         });
 });
 
-// Retrieve a album based on spotifyID provided in request body
-albumRouter.get("/:albumId", async (req, res) => {
+// Retrieve an album based on spotifyID provided in request body
+albumRouter.get("/:spotifyId", async (req, res) => {
     // Validate request
-    if (!req.params.albumId) {
+    if (!req.params.spotifyId) {
         res.status(400).send({
             message: "AlbumID can not be empty!"
         });
@@ -45,7 +45,7 @@ albumRouter.get("/:albumId", async (req, res) => {
     }
 
     let response = {};
-    getAlbum(spotify, req.params.albumId).then((data) => {
+    getAlbum(spotify, req.params.spotifyId).then((data) => {
         response.id = data.id;
         response.name = data.name;
         response.images = data.images;
@@ -82,8 +82,6 @@ albumRouter.get("/lookup/:albumId", (req, res) => {
             });
         }
 
-        console.log(data[0].dataValues.spotifyId)
-
         let response = {};
         getAlbum(spotify, data[0].dataValues.spotifyId).then((data) => {
             response.id = data.id;
@@ -118,9 +116,18 @@ albumRouter.get("/search/:query", async (req, res) => {
         return;
     }
 
-
+    let response = [];
     searchAlbum(spotify, req.params.query).then((data) => {
-        res.send(data);
+        data.items.forEach(item => {
+            let albumObject = {};
+            albumObject.artists = item.artists;
+            albumObject.external_urls = item.external_urls;
+            albumObject.spotifyId = item.id;
+            albumObject.images = item.images;
+            albumObject.name = item.name;
+            response.push(albumObject);
+        })
+        res.send(response);
     });
 });
 
