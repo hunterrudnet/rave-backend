@@ -19,11 +19,7 @@ dotenv.config();
 const app = express();
 const PORT = 8080;
 
-var corsOptions = {
-    origin: "http://localhost:8081"
-};
-
-app.use(cors(corsOptions));
+app.use(cors());
 app.use(express.json());
 
 try {
