@@ -19,17 +19,10 @@ userRouter.post("/", (req, res) => {
         return;
     }
 
-    // Create a new user
-    const user = {
-        email: req.body.email,
-        username: req.body.username,
-        bio: req.body.bio,
-        image: req.body.image
-    };
-
     // Save User in the database
     User.findOrCreate({where: {email: req.body.email}, defaults: {
             username: req.body.username,
+            name: req.body.name,
             bio: req.body.bio,
             image: req.body.image
         }})
@@ -56,6 +49,7 @@ userRouter.put("/", (req, res) => {
     // Create a new user
     const user = {
         username: req.body.username,
+        name: req.body.name,
         bio: req.body.bio,
         image: req.body.image
     };
