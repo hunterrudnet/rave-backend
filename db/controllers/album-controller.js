@@ -1,38 +1,13 @@
 import express from "express";
 import Album from "../models/album.js";
+import Review from "../models/review.js";
 import spotify from "../../spotify/index.js";
+import sequelize from "../models/index.js";
 import { getAlbum, searchAlbum } from "../../spotify/api.js";
 import Track from "../models/track.js";
 
 
 const albumRouter = express.Router();
-
-albumRouter.post("/", (req, res) => {
-    // Validate request
-    if (!req.body.spotifyId) {
-        res.status(400).send({
-            message: "Album ID can not be empty!"
-        });
-        return;
-    }
-
-    // Create a new user
-    const album = {
-        spotifyId: req.body.spotifyId,
-    };
-
-    // Save Album in the database
-    Album.create(album)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Album."
-            });
-        });
-});
 
 // Retrieve an album based on spotifyID provided in request body
 albumRouter.get("/:spotifyId", async (req, res) => {
@@ -46,7 +21,7 @@ albumRouter.get("/:spotifyId", async (req, res) => {
 
     let response = {};
     getAlbum(spotify, req.params.spotifyId).then((data) => {
-        response.id = data.id;
+        response.spotifyId = data.id;
         response.name = data.name;
         response.images = data.images;
         response.tracks = data.tracks.items.map(track => track.name);
@@ -60,14 +35,42 @@ albumRouter.get("/:spotifyId", async (req, res) => {
                 artist: data.artists[0].name
             }
         }).then((album_data) => {
-            console.log(album_data);
+            response.id = album_data[0].dataValues.id;
             data.tracks.items.forEach(track => {
                 Track.findOrCreate({where: {spotifyId: track.id, albumId: album_data[0].dataValues.id}})
             })
+            res.send(response);
         })
-
-        res.send(response);
     });
+});
+
+// Return the average review score for an album
+albumRouter.get("/review/:albumId", async (req, res) => {
+    // Validate request
+    if (!req.params.albumId) {
+        res.status(400).send({
+            message: "AlbumID can not be empty!"
+        });
+        return;
+    }
+
+    try {
+        const result = await Review.findAll({
+          attributes: [
+            [sequelize.fn('AVG', sequelize.col('score')), 'averageScore'],
+          ],
+          where: {
+            albumId: req.params.albumId,
+          },
+          raw: true,
+        });
+    
+        const averageScore = parseFloat(result[0].averageScore);
+        res.send({ averageScore })
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: 'An error occurred while retrieving the average review score.' })
+    }
 });
 
 albumRouter.get("/lookup/:albumId", (req, res) => {
