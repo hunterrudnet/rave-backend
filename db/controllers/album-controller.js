@@ -24,7 +24,14 @@ albumRouter.get("/:spotifyId", async (req, res) => {
         response.spotifyId = data.id;
         response.name = data.name;
         response.images = data.images;
-        response.tracks = data.tracks.items.map(track => track.name);
+        response.tracks = data.tracks.items.map(track => {
+            return {
+                name: track.name,
+                duration: track.duration_ms,
+                url: track.external_urls.spotify
+                }
+            }
+        );
         response.artist = data.artists[0];
 
         Album.findOrCreate({
