@@ -121,8 +121,33 @@ userRouter.post("/likes", (req, res) => {
         });
 });
 
+const isModerator = async (userId) => {
+    try {
+      const moderator = await Moderator.findOne({ where: { UserId: userId } });
+      if (moderator) {
+        return true; // The user is a moderator
+      } else {
+        return false; // The user is not a moderator
+      }
+    } catch (err) {
+      // Handle the error
+      console.error(err);
+      return false;
+    }
+}
+
+userRouter.get('/moderator/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    try {
+      const isMod = await isModerator(userId);
+      res.status(200).json({ isModerator: isMod });
+    } catch (err) {
+      res.status(500).send({ message: "An error occurred while checking if the user is a moderator." });
+    }
+});
+
 // Turn a user into a moderator
-userRouter.post("/moderator/", (req, res) => {
+userRouter.post("/moderator", (req, res) => {
     // Validate request
     if (!req.body.userId && !req.body.role) {
         res.status(400).send({
