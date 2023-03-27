@@ -53,7 +53,12 @@ albumRouter.get("/:spotifyId", async (req, res) => {
         response.artist = data.artists[0];
 
         Album.findOrCreate({
-            where: {spotifyId: data.id}
+            where: {spotifyId: data.id},
+            defaults: {
+                name: data.name,
+                image: data.images[0].url,
+                artist: data.artists[0].name
+            }
         }).then((album_data) => {
             console.log(album_data);
             data.tracks.items.forEach(track => {
