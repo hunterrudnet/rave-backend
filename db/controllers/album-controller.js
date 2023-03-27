@@ -1,6 +1,8 @@
 import express from "express";
 import Album from "../models/album.js";
+import Review from "../models/review.js";
 import spotify from "../../spotify/index.js";
+import sequelize from "../models/index.js";
 import { getAlbum, searchAlbum } from "../../spotify/api.js";
 import Track from "../models/track.js";
 
@@ -68,6 +70,35 @@ albumRouter.get("/:spotifyId", async (req, res) => {
 
         res.send(response);
     });
+});
+
+// Return the average review score for an album
+albumRouter.get("/review/:albumId", async (req, res) => {
+    // Validate request
+    if (!req.params.albumId) {
+        res.status(400).send({
+            message: "AlbumID can not be empty!"
+        });
+        return;
+    }
+
+    try {
+        const result = await Review.findAll({
+          attributes: [
+            [sequelize.fn('AVG', sequelize.col('score')), 'averageScore'],
+          ],
+          where: {
+            albumId: req.params.albumId,
+          },
+          raw: true,
+        });
+    
+        const averageScore = parseFloat(result[0].averageScore);
+        res.send({ averageScore })
+      } catch (error) {
+        console.log(error);
+        res.status(500).send({ message: 'An error occurred while retrieving the average review score.' })
+    }
 });
 
 albumRouter.get("/lookup/:albumId", (req, res) => {
