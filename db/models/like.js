@@ -7,4 +7,8 @@ const Like = sequelize.define("Like", {});
 User.belongsToMany(Album, { through: Like });
 Album.belongsToMany(User, { through: Like });
 
+// Define the association between the Like and Album models
+Like.belongsTo(Album);
+Album.hasMany(Like);
+
 export default Like;
