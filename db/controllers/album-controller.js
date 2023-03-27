@@ -9,33 +9,6 @@ import Track from "../models/track.js";
 
 const albumRouter = express.Router();
 
-albumRouter.post("/", (req, res) => {
-    // Validate request
-    if (!req.body.spotifyId) {
-        res.status(400).send({
-            message: "Album ID can not be empty!"
-        });
-        return;
-    }
-
-    // Create a new user
-    const album = {
-        spotifyId: req.body.spotifyId,
-    };
-
-    // Save Album in the database
-    Album.create(album)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Album."
-            });
-        });
-});
-
 // Retrieve an album based on spotifyID provided in request body
 albumRouter.get("/:spotifyId", async (req, res) => {
     // Validate request
