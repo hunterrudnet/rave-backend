@@ -21,7 +21,7 @@ albumRouter.get("/:spotifyId", async (req, res) => {
 
     let response = {};
     getAlbum(spotify, req.params.spotifyId).then((data) => {
-        response.id = data.id;
+        response.spotifyId = data.id;
         response.name = data.name;
         response.images = data.images;
         response.tracks = data.tracks.items.map(track => track.name);
@@ -35,13 +35,12 @@ albumRouter.get("/:spotifyId", async (req, res) => {
                 artist: data.artists[0].name
             }
         }).then((album_data) => {
-            console.log(album_data);
+            response.id = album_data[0].dataValues.id;
             data.tracks.items.forEach(track => {
                 Track.findOrCreate({where: {spotifyId: track.id, albumId: album_data[0].dataValues.id}})
             })
+            res.send(response);
         })
-
-        res.send(response);
     });
 });
 
