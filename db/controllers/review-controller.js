@@ -5,35 +5,34 @@ import Album from "../models/album.js";
 
 const reviewRouter = express.Router();
 
-reviewRouter.post("/", (req, res) => {
+reviewRouter.post("/", async (req, res) => {
     // Validate request
     if (!req.body.userId && !req.body.albumId && !req.body.score) {
-        res.status(400).send({
-            message: "Fields can not be empty!"
-        });
-        return;
+      res.status(400).send({
+        message: "Fields can not be empty!",
+      });
+      return;
     }
-
-    // Create a new user
-    const review = {
-        UserId: req.body.userId,
-        AlbumId: req.body.albumId,
-        score: req.body.score,
-        reviewText: req.body.reviewText
-    };
-
-    // Save Review in the database
-    // TODO: Check if review already exists for this user and album, and update it if so. Look into findOrCreate()
-    Review.create(review)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Review."
-            });
-        });
+  
+    try {
+      // Update or create the review in the database
+      const [review, created] = await Review.upsert(
+        {
+          UserId: req.body.userId,
+          AlbumId: req.body.albumId,
+          score: req.body.score,
+          reviewText: req.body.reviewText,
+        },
+        { returning: true } // Return the updated review object
+      );
+  
+      res.send(review);
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message: "Some error occurred while creating or updating the Review.",
+      });
+    }
 });
 
 reviewRouter.get("/", (req, res) => {
