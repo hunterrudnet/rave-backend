@@ -20,26 +20,51 @@ userRouter.post("/", async (req, res) => {
   }
 
   try {
-    // Update or create the user in the database
-    const [user, created] = await User.upsert(
-        {
-          email: req.body.email,
-          username: req.body.username,
-          name: req.body.name,
-          bio: req.body.bio,
-          image: req.body.image
-        },
-        {returning: true} // Return the updated user object
-    );
+    // Check if the user already exists in the database
+    const existingUser = await User.findOne({ where: { email: req.body.email } });
 
-    // Check if the user is a moderator
-    const isMod = await isModerator(user.id);
-    // Convert the user object to a plain JavaScript object
-    const userObj = user.get({plain: true});
-    // Add isMod field inside the user object
-    userObj.isMod = isMod;
+    if (existingUser) {
+      // If the user exists, update only the fields that are passed in
+      const updateContent = {
+        email: req.body.email || existingUser.email,
+        username: req.body.username || existingUser.username,
+        name: req.body.name || existingUser.name,
+        image: req.body.image || existingUser.image,
+        bio: req.body.bio !== undefined ? req.body.bio : existingUser.bio, // Use existing bio if it is not in the request body
+      };
 
-    res.send(userObj);
+      // Update the user in the database
+      await existingUser.update(updateContent);
+
+      // Check if the user is a moderator
+      const isMod = await isModerator(existingUser.id);
+      // Convert the user object to a plain JavaScript object
+      const userObj = existingUser.get({ plain: true });
+      // Add isMod field inside the user object
+      userObj.isMod = isMod;
+
+      res.send(userObj);
+    } else {
+      // If the user does not exist, create a new user with all the fields from the request body
+      const newUserData = {
+        email: req.body.email,
+        username: req.body.username,
+        name: req.body.name,
+        image: req.body.image,
+        bio: req.body.bio !== undefined ? req.body.bio : null, // Set bio to null if it is not in the request body
+      };
+
+      const newUser = await User.create(newUserData);
+
+      // Check if the user is a moderator
+      const isMod = await isModerator(newUser.id);
+      // Convert the user object to a plain JavaScript object
+      const userObj = newUser.get({ plain: true });
+      // Add isMod field inside the user object
+      userObj.isMod = isMod;
+
+      res.send(userObj);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).send({
@@ -119,8 +144,11 @@ userRouter.post("/moderator", async (req, res) => {
   try {
     // Upsert the moderator in the database to prevent multiple moderator statuses for the same user
     const [mod, created] = await Moderator.upsert(moderator);
-
-    res.send(mod);
+    if (mod) {
+      res.send({userId: mod.UserId, role: mod.role});
+    } else {
+      res.send(mod);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).send({
