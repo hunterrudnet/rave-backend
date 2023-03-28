@@ -7,60 +7,45 @@ import Moderator from "../models/moderator.js";
 
 const userRouter = express.Router();
 
-
-// Utility function to check if a user is a moderator
-const isModerator = async (userId) => {
-    try {
-      const moderator = await Moderator.findOne({ where: { UserId: userId } });
-      if (moderator) {
-        return true; // The user is a moderator
-      } else {
-        return false;
-      }
-    } catch (err) {
-      // Handle the error
-      console.error(err);
-      return false;
-    }
-}
-
 // NOTE: all paths defined here will be prepended with /users in the full path generated for the server API
 // after this router is added via `app.use('/users', userRouter);` in server.js
 // Create a new User with email given in request body
 userRouter.post("/", async (req, res) => {
-    // Validate request
-    if (!req.body.email && !req.body.username) {
-        res.status(400).send({
-            message: "Fields can not be empty!"
-        });
-        return;
-    }
-    try {
-        // Save User in the database
-        const [user, created] = await User.findOrCreate({
-          where: { email: req.body.email },
-          defaults: {
-            username: req.body.username,
-            name: req.body.name,
-            bio: req.body.bio,
-            image: req.body.image,
-          },
-        });
-    
-        // Check if the user is a moderator
-        const isMod = await isModerator(user.id);
-        // Convert the user object to a plain JavaScript object
-        const userObj = user.get({ plain: true });
-        // Add isMod field inside the user object
-        userObj.isMod = isMod;
+  // Validate request
+  if (!req.body.email && !req.body.username) {
+    res.status(400).send({
+      message: "Fields can not be empty!",
+    });
+    return;
+  }
 
-        res.send(userObj);
-      } catch (err) {
-        console.error(err);
-        res.status(500).send({
-          message: "Some error occurred while creating the User.",
-        });
-      }
+  try {
+    // Update or create the user in the database
+    const [user, created] = await User.upsert(
+      {
+        email: req.body.email,
+        username: req.body.username,
+        name: req.body.name,
+        bio: req.body.bio,
+        image: req.body.image,
+      },
+      { returning: true } // Return the updated user object
+    );
+
+    // Check if the user is a moderator
+    const isMod = await isModerator(user.id);
+    // Convert the user object to a plain JavaScript object
+    const userObj = user.get({ plain: true });
+    // Add isMod field inside the user object
+    userObj.isMod = isMod;
+
+    res.send(userObj);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message: "Some error occurred while creating or updating the User.",
+    });
+  }
 });
 
 userRouter.put("/", (req, res) => {
@@ -98,45 +83,51 @@ userRouter.put("/", (req, res) => {
 
 
 // Retrieve a user based on username provided in request body
-userRouter.get("/lookup/:username", async (req, res) => {
+userRouter.get("/lookup/:username", (req, res) => {
     // Validate request
     if (!req.params.username) {
-      res.status(400).send({
-        message: "Username can not be empty!",
-      });
-      return;
-    }
-  
-    try {
-      const user = await User.findOne({
-        where: { username: req.params.username },
-        include: [Album],
-      });
-  
-      if (!user) {
-        res.status(404).send({
-          message: "User not found with username " + req.params.username,
+        res.status(400).send({
+            message: "Username can not be empty!"
         });
         return;
-      }
-  
-      // Check if the user is a moderator
-      const isMod = await isModerator(user.id);
-  
-      // Convert the user object to a plain JavaScript object
-      const userObj = user.get({ plain: true });
-  
-      // Add isMod field inside the user object
-      userObj.isMod = isMod;
-  
-      res.send(userObj);
-    } catch (err) {
-      console.error(err);
-      res.status(500).send({
-        message: "An Error occurred retrieving the User.",
-      });
     }
-  });
+
+    User.findAll({where: { username: req.params.username }, include: [ Album ]})
+        .then(data => {
+            res.send(data);
+        })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "An Error occurred retrieving the User."
+            });
+        });
+});
+
+const isModerator = async (userId) => {
+    try {
+      const moderator = await Moderator.findOne({ where: { UserId: userId } });
+      if (moderator) {
+        return true; // The user is a moderator
+      } else {
+        return false; // The user is not a moderator
+      }
+    } catch (err) {
+      // Handle the error
+      console.error(err);
+      return false;
+    }
+}
+
+userRouter.get('/moderator/:userId', async (req, res) => {
+    const userId = req.params.userId;
+    try {
+      const isMod = await isModerator(userId);
+      res.status(200).json({ isModerator: isMod });
+    } catch (err) {
+      res.status(500).send({ message: "An error occurred while checking if the user is a moderator." });
+    }
+});
 
 // Turn a user into a moderator
 userRouter.post("/moderator", (req, res) => {
