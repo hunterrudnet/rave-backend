@@ -1,11 +1,11 @@
 import express from "express";
 import cors from "cors";
+import Like from "./db/models/like.js";
 import User from "./db/models/user.js";
 import UserFollow from "./db/models/userFollow.js";
 import Album from "./db/models/album.js";
 import Track from "./db/models/track.js";
 import Review from "./db/models/review.js";
-import Like from "./db/models/like.js";
 import spotify from "./spotify/index.js";
 import sequelize from "./db/models/index.js";
 import userRouter from "./db/controllers/user-controller.js";
@@ -27,7 +27,11 @@ app.use(express.json());
 try {
     // Use { force: true } to force db to reset and pick up changes on server restart, remove to surpress
     // this behavior.
-    await sequelize.sync({ force: true });
+    await sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(data => {
+        sequelize.sync({force: true});
+    }).then(data => {
+        sequelize.query('SET FOREIGN_KEY_CHECKS = 1');
+    });
 } catch (error) {
     console.error('Error synchronizing database:', error);
 }

@@ -1,7 +1,7 @@
-
 import express from "express";
 import Like from "../models/like.js";
 import Album from "../models/album.js";
+import User from "../models/user.js";
 
 const likeRouter = express.Router();
 
@@ -38,23 +38,19 @@ likeRouter.post("/", (req, res) => {
 likeRouter.get('/liked-albums/:userId', async (req, res) => {
     const userId = req.params.userId;
     try {
-      const likedAlbums = await Like.findAll({
-        where: { UserId: userId },
-        include: [Album]
-      });
-      // Now, map through the response and return the albumID and spotifyAlbumID for each album
-      const albumList = likedAlbums.map(like => {
-        return {
-          id: like.Album.id,
-          spotifyId: like.Album.spotifyId
-        };
-      });
-      
-      res.send(albumList);
+        Album.findAll({
+            include: [
+                {
+                    model: Like,
+                    where: {UserId: userId}
+                }
+            ]
+        }).then(albums => {
+            res.send(albums)
+        })
     } catch (err) {
-        console.log(err);
-      res.status(500).send({ message: "An error occurred while retrieving the liked albums." });
+        res.status(500).send({message: "An error occurred while retrieving the liked albums."});
     }
-  });
+});
 
 export default likeRouter;
