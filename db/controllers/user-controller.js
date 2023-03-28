@@ -14,7 +14,7 @@ userRouter.post("/", async (req, res) => {
   // Validate request
   if (!req.body.email && !req.body.username) {
     res.status(400).send({
-      message: "Fields can not be empty!",
+      message: "Fields can not be empty!"
     });
     return;
   }
@@ -22,20 +22,20 @@ userRouter.post("/", async (req, res) => {
   try {
     // Update or create the user in the database
     const [user, created] = await User.upsert(
-      {
-        email: req.body.email,
-        username: req.body.username,
-        name: req.body.name,
-        bio: req.body.bio,
-        image: req.body.image,
-      },
-      { returning: true } // Return the updated user object
+        {
+          email: req.body.email,
+          username: req.body.username,
+          name: req.body.name,
+          bio: req.body.bio,
+          image: req.body.image
+        },
+        {returning: true} // Return the updated user object
     );
 
     // Check if the user is a moderator
     const isMod = await isModerator(user.id);
     // Convert the user object to a plain JavaScript object
-    const userObj = user.get({ plain: true });
+    const userObj = user.get({plain: true});
     // Add isMod field inside the user object
     userObj.isMod = isMod;
 
@@ -43,119 +43,118 @@ userRouter.post("/", async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send({
-      message: "Some error occurred while creating or updating the User.",
+      message: "Some error occurred while creating or updating the User."
     });
   }
 });
 
-userRouter.put("/", (req, res) => {
-    // Validate request
-    if (!req.body.email) {
-        res.status(400).send({
-            message: "Fields can not be empty!"
-        });
-        return;
-    }
-
-    // Create a new user
-    const user = {
-        username: req.body.username,
-        name: req.body.name,
-        bio: req.body.bio,
-        image: req.body.image
-    };
-
-    // Save User in the database
-    User.update(user, {where: {email: req.body.email}})
-        .then(data => {
-            res.status(200).send({
-                message:
-                     "User Successfully Updated."
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the User."
-            });
-        });
-});
-
-
 // Retrieve a user based on username provided in request body
 userRouter.get("/lookup/:username", (req, res) => {
-    // Validate request
-    if (!req.params.username) {
-        res.status(400).send({
-            message: "Username can not be empty!"
-        });
-        return;
-    }
+  // Validate request
+  if (!req.params.username) {
+    res.status(400).send({
+      message: "Username can not be empty!"
+    });
+    return;
+  }
 
-    User.findAll({where: { username: req.params.username }, include: [ Album ]})
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "An Error occurred retrieving the User."
-            });
-        });
+  User.findAll({where: {username: req.params.username}, include: [Album]})
+  .then(async data => {
+    if (data && data.length > 0 && "dataValues" in data[0]) {
+      const user = data[0].dataValues;
+      const isMod = await isModerator(user.id);
+      res.send({isMod: isMod, ...user});
+    }
+  })
+  .catch(err => {
+    res.status(500).send({
+      message:
+          err.message || "An Error occurred retrieving the User."
+    });
+  });
 });
 
 const isModerator = async (userId) => {
-    try {
-      const moderator = await Moderator.findOne({ where: { UserId: userId } });
-      if (moderator) {
-        return true; // The user is a moderator
-      } else {
-        return false; // The user is not a moderator
-      }
-    } catch (err) {
-      // Handle the error
-      console.error(err);
-      return false;
+  try {
+    const moderator = await Moderator.findOne({where: {UserId: userId}});
+    if (moderator) {
+      return true; // The user is a moderator
+    } else {
+      return false; // The user is not a moderator
     }
-}
+  } catch (err) {
+    // Handle the error
+    console.error(err);
+    return false;
+  }
+};
 
 userRouter.get('/moderator/:userId', async (req, res) => {
-    const userId = req.params.userId;
-    try {
-      const isMod = await isModerator(userId);
-      res.status(200).json({ isModerator: isMod });
-    } catch (err) {
-      res.status(500).send({ message: "An error occurred while checking if the user is a moderator." });
-    }
+  const userId = req.params.userId;
+  try {
+    const isMod = await isModerator(userId);
+    res.status(200).json({isModerator: isMod});
+  } catch (err) {
+    res.status(500).send(
+        {message: "An error occurred while checking if the user is a moderator."});
+  }
 });
 
 // Turn a user into a moderator
-userRouter.post("/moderator", (req, res) => {
-    // Validate request
-    if (!req.body.userId && !req.body.role) {
-        res.status(400).send({
-            message: "Fields can not be empty!"
-        });
-        return;
+userRouter.post("/moderator", async (req, res) => {
+  // Validate request
+  if (!req.body.userId && !req.body.role) {
+    res.status(400).send({
+      message: "Fields can not be empty!"
+    });
+    return;
+  }
+
+  // Create a new moderator
+  const moderator = {
+    UserId: req.body.userId,
+    role: req.body.role
+  };
+
+  try {
+    // Upsert the moderator in the database to prevent multiple moderator statuses for the same user
+    const [mod, created] = await Moderator.upsert(moderator);
+
+    res.send(mod);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message:
+          err.message
+          || "Some error occurred while creating/updating the Moderator."
+    });
+  }
+});
+
+// Remove a moderator
+userRouter.delete("/moderator/:userId", async (req, res) => {
+  try {
+    const moderator = await Moderator.findOne(
+        {where: {UserId: req.params.userId}}); // Find the moderator by UserId
+
+    if (!moderator) {
+      res.status(404).send({
+        message: "Moderator not found."
+      });
+      return;
     }
 
-    // Create a new moderator
-    const moderator = {
-        UserId: req.body.userId,
-        role: req.body.role,
-    };
+    const deletedModeratorId = moderator.id;
 
-    // Save User in the database
-    Moderator.create(moderator)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Moderator."
-            });
-        });
+    await moderator.destroy(); // Delete the moderator from the database
+
+    res.send({id: deletedModeratorId, userId: req.params.userId});
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message: "Some error occurred while removing the Moderator."
+    });
+  }
 });
 
 export default userRouter;

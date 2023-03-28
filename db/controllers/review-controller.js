@@ -56,8 +56,7 @@ reviewRouter.delete("/:reviewId", (req, res) => {
     Review.destroy({where: { id: req.params.reviewId }})
         .then(data => {
             res.status(200).send({
-                message:
-                   "Successfully Deleted"
+                id: req.params.reviewId
             });
         })
         .catch(err => {

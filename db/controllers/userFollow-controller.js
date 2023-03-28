@@ -35,6 +35,38 @@ userFollowRouter.post("/", (req, res) => {
         });
 });
 
+// Delete a UserFollow
+userFollowRouter.delete("/", async (req, res) => {
+    try {
+      const { follower_id, following_id } = req.body;
+  
+      const userFollow = await UserFollow.findOne({
+        where: {
+          follower_id: follower_id,
+          following_id: following_id,
+        },
+      });
+  
+      if (!userFollow) {
+        res.status(404).send({
+          message: "UserFollow not found.",
+        });
+        return;
+      }
+  
+      await userFollow.destroy(); // Delete the user follow from the database
+  
+      res.send(
+        {id: userFollow.id, follower_id: userFollow.follower_id, following_id: userFollow.following_id}
+      );
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message: "Some error occurred while unfollowing the user.",
+      });
+    }
+  });
+
 // Get all users that a user is following
 userFollowRouter.get("/following/:userId", (req, res) => {
     // Validate request
