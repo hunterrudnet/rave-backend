@@ -20,16 +20,24 @@ userRouter.post("/", async (req, res) => {
   }
 
   try {
+    const updateContent = {
+      email: req.body.email,
+      username: req.body.username,
+      name: req.body.name,
+      image: req.body.image
+    };
+
+    const fields = ["email", "username", "name", "image"];
+    if (req.body.bio) {
+      updateContent.bio = req.body.bio;
+      fields.push("bio");
+    }
+
     // Update or create the user in the database
     const [user, created] = await User.upsert(
-        {
-          email: req.body.email,
-          username: req.body.username,
-          name: req.body.name,
-          bio: req.body.bio,
-          image: req.body.image
-        },
-        {returning: true} // Return the updated user object
+        updateContent,
+        {returning: true}, // Return the updated user object
+        {fields: fields}
     );
 
     // Check if the user is a moderator
@@ -119,7 +127,7 @@ userRouter.post("/moderator", async (req, res) => {
   try {
     // Upsert the moderator in the database to prevent multiple moderator statuses for the same user
     const [mod, created] = await Moderator.upsert(moderator);
-
+    console.log(mod);
     res.send(mod);
   } catch (err) {
     console.error(err);
