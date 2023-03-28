@@ -127,8 +127,11 @@ userRouter.post("/moderator", async (req, res) => {
   try {
     // Upsert the moderator in the database to prevent multiple moderator statuses for the same user
     const [mod, created] = await Moderator.upsert(moderator);
-    console.log(mod);
-    res.send(mod);
+    if (mod) {
+      res.send({userId: mod.UserId, role: mod.role});
+    } else {
+      res.send(mod);
+    }
   } catch (err) {
     console.error(err);
     res.status(500).send({
