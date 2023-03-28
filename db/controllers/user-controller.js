@@ -130,38 +130,39 @@ userRouter.get('/moderator/:userId', async (req, res) => {
 });
 
 // Turn a user into a moderator
-userRouter.post("/moderator", (req, res) => {
-    // Validate request
-    if (!req.body.userId && !req.body.role) {
-        res.status(400).send({
-            message: "Fields can not be empty!"
-        });
-        return;
-    }
+userRouter.post("/moderator", async (req, res) => {
+  // Validate request
+  if (!req.body.userId && !req.body.role) {
+    res.status(400).send({
+      message: "Fields can not be empty!",
+    });
+    return;
+  }
 
-    // Create a new moderator
-    const moderator = {
-        UserId: req.body.userId,
-        role: req.body.role,
-    };
+  // Create a new moderator
+  const moderator = {
+    UserId: req.body.userId,
+    role: req.body.role,
+  };
 
-    // Save User in the database
-    Moderator.create(moderator)
-        .then(data => {
-            res.send(data);
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the Moderator."
-            });
-        });
+  try {
+    // Upsert the moderator in the database to prevent multiple moderator statuses for the same user
+    const [mod, created] = await Moderator.upsert(moderator);
+
+    res.send(mod);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message:
+        err.message || "Some error occurred while creating/updating the Moderator.",
+    });
+  }
 });
 
 // Remove a moderator
-userRouter.delete("/moderator/:id", async (req, res) => {
+userRouter.delete("/moderator/:userId", async (req, res) => {
   try {
-    const moderator = await Moderator.findByPk(req.params.id); // Find the moderator by its ID
+    const moderator = await Moderator.findOne({ where: { UserId: req.params.userId } }); // Find the moderator by UserId
 
     if (!moderator) {
       res.status(404).send({
@@ -182,5 +183,6 @@ userRouter.delete("/moderator/:id", async (req, res) => {
     });
   }
 });
+
 
 export default userRouter;
