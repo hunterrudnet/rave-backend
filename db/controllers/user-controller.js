@@ -48,40 +48,6 @@ userRouter.post("/", async (req, res) => {
   }
 });
 
-userRouter.put("/", (req, res) => {
-    // Validate request
-    if (!req.body.email) {
-        res.status(400).send({
-            message: "Fields can not be empty!"
-        });
-        return;
-    }
-
-    // Create a new user
-    const user = {
-        username: req.body.username,
-        name: req.body.name,
-        bio: req.body.bio,
-        image: req.body.image
-    };
-
-    // Save User in the database
-    User.update(user, {where: {email: req.body.email}})
-        .then(data => {
-            res.status(200).send({
-                message:
-                     "User Successfully Updated."
-            });
-        })
-        .catch(err => {
-            res.status(500).send({
-                message:
-                    err.message || "Some error occurred while creating the User."
-            });
-        });
-});
-
-
 // Retrieve a user based on username provided in request body
 userRouter.get("/lookup/:username", (req, res) => {
     // Validate request
@@ -175,7 +141,7 @@ userRouter.delete("/moderator/:userId", async (req, res) => {
 
     await moderator.destroy(); // Delete the moderator from the database
 
-    res.send({ id: deletedModeratorId, userId: req.params.userId});
+    res.send({ id: deletedModeratorId,userId: req.params.userId});
   } catch (err) {
     console.error(err);
     res.status(500).send({
