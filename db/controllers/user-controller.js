@@ -171,11 +171,11 @@ userRouter.delete("/moderator/:userId", async (req, res) => {
       return;
     }
 
+    const deletedModeratorId = moderator.id;
+
     await moderator.destroy(); // Delete the moderator from the database
 
-    res.send({
-      message: "Moderator removed successfully!",
-    });
+    res.send({ id: deletedModeratorId, userId: req.params.userId});
   } catch (err) {
     console.error(err);
     res.status(500).send({

@@ -46,6 +46,8 @@ likeRouter.delete("/", async (req, res) => {
       },
     });
 
+    console.log(like)
+
     if (!like) {
       res.status(404).send({
         message: "Like not found.",
@@ -55,9 +57,7 @@ likeRouter.delete("/", async (req, res) => {
 
     await like.destroy(); // Delete the like from the database
 
-    res.send({
-      message: "Like deleted successfully!",
-    });
+    res.send({userId: like.UserId, albumId: like.AlbumId});
   } catch (err) {
     console.error(err);
     res.status(500).send({

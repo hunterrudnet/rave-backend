@@ -56,9 +56,9 @@ userFollowRouter.delete("/", async (req, res) => {
   
       await userFollow.destroy(); // Delete the user follow from the database
   
-      res.send({
-        message: "User unfollowed successfully!",
-      });
+      res.send(
+        {id: userFollow.id, follower_id: userFollow.follower_id, following_id: userFollow.following_id}
+      );
     } catch (err) {
       console.error(err);
       res.status(500).send({
