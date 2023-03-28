@@ -34,6 +34,38 @@ likeRouter.post("/", (req, res) => {
         });
 });
 
+// delete a like
+likeRouter.delete("/", async (req, res) => {
+  try {
+    const { userId, albumId } = req.body;
+
+    const like = await Like.findOne({
+      where: {
+        UserId: userId,
+        AlbumId: albumId,
+      },
+    });
+
+    if (!like) {
+      res.status(404).send({
+        message: "Like not found.",
+      });
+      return;
+    }
+
+    await like.destroy(); // Delete the like from the database
+
+    res.send({
+      message: "Like deleted successfully!",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message: "Some error occurred while deleting the Like.",
+    });
+  }
+});
+
 // Get all the liked albums for a specific user
 likeRouter.get('/liked-albums/:userId', async (req, res) => {
     const userId = req.params.userId;

@@ -158,4 +158,29 @@ userRouter.post("/moderator", (req, res) => {
         });
 });
 
+// Remove a moderator
+userRouter.delete("/moderator/:id", async (req, res) => {
+  try {
+    const moderator = await Moderator.findByPk(req.params.id); // Find the moderator by its ID
+
+    if (!moderator) {
+      res.status(404).send({
+        message: "Moderator not found.",
+      });
+      return;
+    }
+
+    await moderator.destroy(); // Delete the moderator from the database
+
+    res.send({
+      message: "Moderator removed successfully!",
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send({
+      message: "Some error occurred while removing the Moderator.",
+    });
+  }
+});
+
 export default userRouter;
