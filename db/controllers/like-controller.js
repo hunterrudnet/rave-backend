@@ -2,6 +2,7 @@ import express from "express";
 import Like from "../models/like.js";
 import Album from "../models/album.js";
 import User from "../models/user.js";
+import sequelize from "../models/index.js";
 
 const likeRouter = express.Router();
 
@@ -36,34 +37,34 @@ likeRouter.post("/", (req, res) => {
 
 // delete a like
 likeRouter.delete("/", async (req, res) => {
-  try {
-    const { userId, albumId } = req.body;
+    try {
+        const {userId, albumId} = req.body;
 
-    const like = await Like.findOne({
-      where: {
-        UserId: userId,
-        AlbumId: albumId,
-      },
-    });
+        const like = await Like.findOne({
+            where: {
+                UserId: userId,
+                AlbumId: albumId,
+            },
+        });
 
-    console.log(like)
+        console.log(like)
 
-    if (!like) {
-      res.status(404).send({
-        message: "Like not found.",
-      });
-      return;
+        if (!like) {
+            res.status(404).send({
+                message: "Like not found.",
+            });
+            return;
+        }
+
+        await like.destroy(); // Delete the like from the database
+
+        res.send({userId: like.UserId, albumId: like.AlbumId});
+    } catch (err) {
+        console.error(err);
+        res.status(500).send({
+            message: "Some error occurred while deleting the Like.",
+        });
     }
-
-    await like.destroy(); // Delete the like from the database
-
-    res.send({userId: like.UserId, albumId: like.AlbumId});
-  } catch (err) {
-    console.error(err);
-    res.status(500).send({
-      message: "Some error occurred while deleting the Like.",
-    });
-  }
 });
 
 // Get all the liked albums for a specific user
@@ -76,7 +77,16 @@ likeRouter.get('/liked-albums/:userId', async (req, res) => {
                     model: Like,
                     where: {UserId: userId}
                 }
-            ]
+            ],
+            attributes: [
+                "id",
+                "spotifyId",
+                "image",
+                "name",
+                "artist",
+                [sequelize.fn("COUNT", sequelize.col("Likes.AlbumId")), "likesCount"],
+            ],
+            group: ["Album.id"],
         }).then(albums => {
             res.send(albums)
         })
