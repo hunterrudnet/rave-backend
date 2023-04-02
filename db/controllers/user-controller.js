@@ -89,6 +89,8 @@ userRouter.get("/lookup/:username", (req, res) => {
       const user = data[0].dataValues;
       const isMod = await isModerator(user.id);
       res.send({isMod: isMod, ...user});
+    } else {
+      res.send({});
     }
   })
   .catch(err => {
