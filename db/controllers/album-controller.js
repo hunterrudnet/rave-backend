@@ -1,10 +1,12 @@
 import express from "express";
 import Album from "../models/album.js";
 import Review from "../models/review.js";
+import Like from "../models/like.js";
 import spotify from "../../spotify/index.js";
 import sequelize from "../models/index.js";
-import { getAlbum, searchAlbum } from "../../spotify/api.js";
+import {getAlbum, searchAlbum} from "../../spotify/api.js";
 import Track from "../models/track.js";
+import User from "../models/user.js";
 
 
 const albumRouter = express.Router();
@@ -25,10 +27,10 @@ albumRouter.get("/:spotifyId", async (req, res) => {
         response.name = data.name;
         response.images = data.images;
         response.tracks = data.tracks.items.map(track => {
-            return {
-                name: track.name,
-                duration: track.duration_ms,
-                url: track.external_urls.spotify
+                return {
+                    name: track.name,
+                    duration: track.duration_ms,
+                    url: track.external_urls.spotify
                 }
             }
         );
@@ -63,20 +65,20 @@ albumRouter.get("/review/:albumId", async (req, res) => {
 
     try {
         const result = await Review.findAll({
-          attributes: [
-            [sequelize.fn('AVG', sequelize.col('score')), 'averageScore'],
-          ],
-          where: {
-            albumId: req.params.albumId,
-          },
-          raw: true,
+            attributes: [
+                [sequelize.fn('AVG', sequelize.col('score')), 'averageScore'],
+            ],
+            where: {
+                albumId: req.params.albumId,
+            },
+            raw: true,
         });
-    
+
         const averageScore = parseFloat(result[0].averageScore);
-        res.send({ averageScore })
-      } catch (error) {
+        res.send({averageScore})
+    } catch (error) {
         console.log(error);
-        res.status(500).send({ message: 'An error occurred while retrieving the average review score.' })
+        res.status(500).send({message: 'An error occurred while retrieving the average review score.'})
     }
 });
 
@@ -144,6 +146,37 @@ albumRouter.get("/search/:query", async (req, res) => {
         })
         res.send(response);
     });
+});
+
+// Get all albums currently stored in our database
+albumRouter.get("/", async (req, res) => {
+    // Get all reviews
+    Album.findAll({
+        include: [
+            {
+                model: Like,
+                attributes: [],
+                duplicating: false,
+            },
+        ],
+        attributes: [
+            "id",
+            "spotifyId",
+            "image",
+            "name",
+            "artist",
+            [sequelize.fn("COUNT", sequelize.col("Likes.AlbumId")), "likesCount"],
+        ],
+        group: ["Album.id"],
+    }).then(data => {
+        res.send(data);
+    })
+        .catch(err => {
+            res.status(500).send({
+                message:
+                    err.message || "Some error occurred while retrieving the Albums."
+            });
+        });
 });
 
 export default albumRouter;
