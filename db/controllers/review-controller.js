@@ -16,17 +16,26 @@ reviewRouter.post("/", async (req, res) => {
 
     try {
         // Update or create the review in the database
-        const [review, created] = await Review.upsert(
-            {
-                UserId: req.body.userId,
-                AlbumId: req.body.albumId,
-                score: req.body.score,
-                reviewText: req.body.reviewText,
-            },
-            {returning: true} // Return the updated review object
-        );
+        const review = {
+            UserId: req.body.userId,
+            AlbumId: req.body.albumId,
+            score: req.body.score,
+            reviewText: req.body.reviewText,
+        }
 
-        res.send(review);
+        const [reviewRecord, created] = await Review.findOrCreate({
+            where: {UserId: req.body.userId, AlbumId: req.body.albumId},
+            defaults: review
+        });
+
+        if (!created) { // if review already exists
+            await reviewRecord.update({
+                score: review.score,
+                reviewText: review.reviewText
+            });
+        }
+
+        res.send(reviewRecord);
     } catch (err) {
         console.error(err);
         res.status(500).send({
