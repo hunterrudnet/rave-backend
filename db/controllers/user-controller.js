@@ -159,13 +159,10 @@ userRouter.post("/moderator", async (req, res) => {
     };
 
     try {
-        // Upsert the moderator in the database to prevent multiple moderator statuses for the same user
-        const [mod, created] = await Moderator.upsert(moderator);
-        if (mod) {
-            res.send({role: mod.role, isMod: true});
-        } else {
-            res.send(mod);
-        }
+        // FindOrCreate moderator in the database to prevent multiple moderator statuses for the same user
+        await Moderator.findOrCreate({where: {UserId: moderator.UserId}, defaults: moderator}).then((data) => {
+            res.send(data)
+        })
     } catch (err) {
         console.error(err);
         res.status(500).send({
