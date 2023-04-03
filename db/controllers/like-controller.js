@@ -1,7 +1,6 @@
 import express from "express";
 import Like from "../models/like.js";
 import Album from "../models/album.js";
-import User from "../models/user.js";
 import sequelize from "../models/index.js";
 
 const likeRouter = express.Router();
@@ -72,20 +71,20 @@ likeRouter.get('/liked-albums/:userId', async (req, res) => {
     const userId = req.params.userId;
     try {
         Album.findAll({
-            include: [
-                {
-                    model: Like,
-                    where: {UserId: userId}
-                }
-            ],
+            include: [{
+                model: Like,
+            }],
             attributes: [
                 "id",
                 "spotifyId",
                 "image",
                 "name",
                 "artist",
-                [sequelize.fn("COUNT", sequelize.col("Likes.AlbumId")), "likesCount"],
+                [sequelize.literal('(SELECT COUNT(*) FROM `Likes` WHERE `Likes`.`AlbumId` = `Album`.`id`)'), 'likesCount'],
             ],
+            where: {
+                "$Likes.UserId$": userId
+            },
             group: ["Album.id"],
         }).then(albums => {
             res.send(albums)
