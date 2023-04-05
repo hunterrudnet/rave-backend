@@ -25,6 +25,7 @@ reviewRouter.post("/", async (req, res) => {
 
         const [reviewRecord, created] = await Review.findOrCreate({
             where: {UserId: req.body.userId, AlbumId: req.body.albumId},
+            include: [User, Album],
             defaults: review
         });
 
