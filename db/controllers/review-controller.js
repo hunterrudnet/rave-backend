@@ -36,12 +36,22 @@ reviewRouter.post("/", async (req, res) => {
             });
         }
 
-        res.send(reviewRecord);
-    } catch (err) {
-        console.error(err);
+      Review.findAll(
+          {where: {UserId: req.body.userId, AlbumId: req.body.albumId}, include: [User, Album]})
+      .then(data => {
+        res.send(data[0]);
+      })
+      .catch(err => {
         res.status(500).send({
-            message: "Some error occurred while creating or updating the Review.",
+          message:
+              err.message || "An Error occurred retrieving the Reviews."
         });
+      });
+    } catch (err) {
+      console.error(err);
+      res.status(500).send({
+        message: "Some error occurred while creating or updating the Review."
+      });
     }
 });
 
