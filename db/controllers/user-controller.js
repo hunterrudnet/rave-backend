@@ -161,7 +161,7 @@ userRouter.post("/moderator", async (req, res) => {
     try {
         // FindOrCreate moderator in the database to prevent multiple moderator statuses for the same user
         await Moderator.findOrCreate({where: {UserId: moderator.UserId}, defaults: moderator}).then((data) => {
-            res.send(data)
+            res.send({userId: req.body.userId, isMod: true});
         })
     } catch (err) {
         console.error(err);
@@ -187,7 +187,7 @@ userRouter.delete("/moderator/:userId", async (req, res) => {
         }
         await moderator.destroy(); // Delete the moderator from the database
 
-        res.send({isMod: false});
+        res.send({userId: req.params.userId, isMod: false});
     } catch (err) {
         console.error(err);
         res.status(500).send({
