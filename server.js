@@ -27,6 +27,7 @@ app.use(express.json());
 try {
     // Use { force: true } to force db to reset and pick up changes on server restart, remove to surpress
     // this behavior.
+    // 
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(data => {
         sequelize.sync({force: true});
     }).then(data => {
