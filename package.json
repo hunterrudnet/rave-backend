@@ -1,5 +1,8 @@
 {
   "type": "module",
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "base-64": "^1.0.0",
     "cors": "^2.8.5",
