@@ -19,7 +19,7 @@ import dotenv from "dotenv";
 dotenv.config();
 
 const app = express();
-const PORT = 8080;
+const PORT = process.env.PORT || 8080;
 
 app.use(cors());
 app.use(express.json());
@@ -27,6 +27,7 @@ app.use(express.json());
 try {
     // Use { force: true } to force db to reset and pick up changes on server restart, remove to surpress
     // this behavior.
+    //
     await sequelize.query('SET FOREIGN_KEY_CHECKS = 0').then(data => {
         sequelize.sync({force: true});
     }).then(data => {
