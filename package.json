@@ -9,5 +9,8 @@
     "request": "^2.88.2",
     "sequelize": "^6.29.3",
     "spotify-web-api-ts": "^1.4.5"
+  },
+  "scripts": {
+    "start": "node server.js"
   }
 }

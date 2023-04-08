@@ -1,3 +1,5 @@
 node_modules
 .idea
 .env
+npm-debug.log
+.DS_Store
