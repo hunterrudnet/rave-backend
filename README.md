@@ -211,3 +211,8 @@ Example Response:
 ```
 
 Note that the response returns and array of records.  If no User with the given email exists this array would be empty. 
+
+## UML Diagram
+<img width="593" alt="Screenshot 2023-04-11 at 9 13 36 AM" src="https://user-images.githubusercontent.com/52325693/231173874-f590cfbf-2bbd-4133-951e-0cb1e2a242b2.png">
+
+
